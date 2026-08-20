@@ -14,6 +14,7 @@ const register = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -43,6 +44,8 @@ const register = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.error("Register error:", error);
+
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -92,6 +95,8 @@ const login = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.error("Login error:", error);
+
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -100,14 +105,27 @@ const login = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    user: {
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-    },
-  });
+  try {
+    res.status(200).json({
+      success: true,
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Get current user error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
-module.exports = { register, login, getMe };
+module.exports = {
+  register,
+  login,
+  getMe,
+};
