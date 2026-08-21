@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../components/Input'
 import Button from '../components/Button'
+import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [errors, setErrors] = useState({})
   const navigate = useNavigate()
+  const { register } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const nextErrors = {}
     if (!form.name.trim()) nextErrors.name = 'Enter your full name.'
@@ -16,7 +19,17 @@ export default function Register() {
     if (!form.password.trim()) nextErrors.password = 'Choose a password.'
     if (form.confirm !== form.password || !form.confirm) nextErrors.confirm = 'Passwords do not match.'
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) navigate('/')
+    if (Object.keys(nextErrors).length > 0) return
+
+    setIsSubmitting(true)
+    try {
+      await register({ name: form.name, email: form.email, password: form.password })
+      navigate('/')
+    } catch (error) {
+      setErrors({ form: error.message })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -59,8 +72,10 @@ export default function Register() {
         error={errors.confirm}
       />
 
-      <Button type="submit" variant="primary" className="w-full">
-        Create Account
+      {errors.form && <p className="text-center text-sm text-danger">{errors.form}</p>}
+
+      <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? 'Creating account...' : 'Create Account'}
       </Button>
 
       <p className="text-center text-sm text-ink-muted">

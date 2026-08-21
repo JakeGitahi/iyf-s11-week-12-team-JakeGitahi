@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import Avatar from './Avatar'
-import { currentUser } from '../data/mockData'
+import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
@@ -9,6 +9,8 @@ const navItems = [
 ]
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
+  const initial = user.name.charAt(0).toUpperCase()
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-white">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
@@ -46,8 +48,9 @@ export default function Navbar() {
             🔔
           </button>
           <NavLink to="/profile" aria-label="Your profile">
-            <Avatar initial={currentUser.initial} size="sm" />
+            <Avatar initial={initial} size="sm" />
           </NavLink>
+          <button onClick={logout} className="text-sm font-medium text-ink-muted hover:text-primary">Log out</button>
         </div>
       </div>
 

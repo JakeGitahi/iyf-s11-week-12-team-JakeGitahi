@@ -1,14 +1,28 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
+import { useAuth } from '../context/AuthContext'
+import { createPost } from '../services/postService'
 
 export default function CreatePost() {
   const [content, setContent] = useState('')
   const navigate = useNavigate()
+  const { user, token } = useAuth()
+  const [error, setError] = useState('')
+  const [isPublishing, setIsPublishing] = useState(false)
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!content.trim()) return
-    navigate('/')
+    setError('')
+    setIsPublishing(true)
+    try {
+      await createPost({ content, author: user.name, token })
+      navigate('/')
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   return (
@@ -38,11 +52,12 @@ export default function CreatePost() {
             <Button variant="secondary" type="button" onClick={() => navigate('/')}>
               Cancel
             </Button>
-            <Button variant="primary" type="button" onClick={handlePublish} disabled={!content.trim()}>
-              Publish
+            <Button variant="primary" type="button" onClick={handlePublish} disabled={!content.trim() || isPublishing}>
+              {isPublishing ? 'Publishing...' : 'Publish'}
             </Button>
           </div>
         </div>
+        {error && <p className="mt-3 text-sm text-danger">{error}</p>}
       </div>
     </div>
   )
